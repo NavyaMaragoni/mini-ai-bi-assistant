@@ -289,3 +289,9 @@ Future improvements:
 | `fallback_reason` shows `ReadTimeout` | The model was too slow. Use a lite or flash model. |
 | `address already in use` on startup | An old server is still running. Stop it with `pkill -f "uvicorn app.main:app"`. |
 | `python: command not found` on Ubuntu | Activate the virtual environment, or use `python3`. |
+
+## How data is stored and queried
+
+- **Storage:** a SQLite file (`data/sales.db`) rebuilt from `data/sales.csv` at every startup, so it never holds duplicates.
+- **Tables:** `sales` holds the 49 clean rows, with ISO dates, an `order_month` column for monthly grouping, and CHECK constraints (quantity > 0, unit_price > 0, discount >= 0). `rejected_records` holds the 2 rejected rows with the reason and the original row as JSON.
+- **Querying:** five pre-written, parameterized SELECT queries in `app/analytics.py`. Values are bound parameters, never concatenated into SQL, and neither user text nor LLM output is ever executed as SQL. Each API response includes the exact SQL used.
