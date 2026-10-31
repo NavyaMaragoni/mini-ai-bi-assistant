@@ -17,19 +17,40 @@ Open http://127.0.0.1:8000. Run the tests with `python -m pytest -v`.
 Optional: put `GEMINI_API_KEY=<your key>` in a git-ignored `.env` file to enable
 the LLM interpreter. Without a key the app uses the rule-based interpreter.
 
+## Screenshot
+
+![Mini AI BI Assistant UI](docs/screenshot.png)
+
 ## Architecture
 
+```mermaid
+flowchart TD
+    UI["Web UI (static/index.html)"] -->|POST /ask| API["FastAPI (app/main.py)"]
+    API --> PRE["Pre-checks: SQL-like input, unsupported topics"]
+    PRE -->|refused| ERR["400 error with example questions"]
+    PRE --> AI["LLM router (Gemini) picks intent and params"]
+    AI --> VAL["Validate against allowlist"]
+    VAL -->|invalid or LLM down| RULES["Rule-based fallback"]
+    VAL -->|valid| SQL["Analytics: parameterized SQL"]
+    RULES --> SQL
+    SQL --> DB[("SQLite")]
+    CSV["data/sales.csv"] --> LOAD["Loader and cleaner (app/database.py)"]
+    LOAD --> DB
+    LOAD -->|bad rows| REJ["rejected_records table"]
+    SQL --> OUT["JSON: answer, supporting data, intent, SQL used"]
 ```
-UI (static/index.html)
-  -> POST /ask (app/main.py)
-  -> pre-checks: SQL-like input, unsupported topics   (app/interpreter.py)
-  -> AI interpreter: Gemini picks intent + params      (app/ai.py)
-       -> validate output against allowlist
-       -> on failure, rule-based fallback              (app/interpreter.py)
-  -> analytics layer: parameterized SQL                (app/analytics.py)
-  -> SQLite  <-  loader/cleaner  <-  data/sales.csv    (app/database.py)
-  -> JSON: answer, supporting data, intent, SQL used
-```
+
+## Example questions
+
+| Question | Answer |
+|---|---|
+| What is the total revenue? | Total revenue is 1,439,200.00 from 48 completed orders. |
+| Which product generated the highest revenue? | Monitor generated the highest revenue: 473,000.00. |
+| Which region generated the highest sales? | The South region generated the highest sales: 411,200.00. |
+| What is the monthly revenue trend? | Revenue went from 210,250.00 in January 2026 to 211,250.00 in June 2026, peaking in May 2026 (318,500.00). |
+| How did revenue change between February and March? | Revenue decreased from 234,600.00 to 223,900.00: a change of -10,700.00 (-4.56%). |
+| Which region had the lowest sales? | Refused (HTTP 400): questions involving "lowest" are not supported yet. |
+| DROP TABLE sales; | Refused (HTTP 400): looks like a database command. The app is read-only. |
 
 ## Data decisions
 
