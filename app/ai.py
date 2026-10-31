@@ -71,7 +71,7 @@ Rules:
 def _call_gemini(system_prompt, user_text, api_key):
     import httpx  # imported here so the rest of the app works without a network client
 
-    model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
     body = {
         "systemInstruction": {"parts": [{"text": system_prompt}]},
         "contents": [{"role": "user", "parts": [{"text": user_text}]}],
