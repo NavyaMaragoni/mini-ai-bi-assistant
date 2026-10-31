@@ -2,7 +2,7 @@
 
 Ask a sales question in plain English and get an answer backed by real database queries, together with the supporting figures and the exact SQL that produced them.
 
-![Mini AI BI Assistant UI](docs/ui-screenshot.png)
+![Mini AI BI Assistant UI](docs/screenshot.png)
 
 ## In one minute
 
