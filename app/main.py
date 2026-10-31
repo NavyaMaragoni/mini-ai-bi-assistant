@@ -1,10 +1,11 @@
 """FastAPI backend: POST /ask turns a question into a structured, query-backed answer."""
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field, field_validator
 
 from app.analytics import AnalyticsError, run_intent
@@ -13,6 +14,7 @@ from app.ai import interpret_with_ai
 from app.interpreter import SUPPORTED_EXAMPLES, UnsupportedQuestion
 
 logger = logging.getLogger("bi-assistant")
+STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
 
 @asynccontextmanager
@@ -49,6 +51,11 @@ async def invalid_request_handler(request, exc):
     return error_response(
         422, "invalid_request",
         'Send JSON like {"question": "What is the total revenue?"} (1-500 characters).')
+
+
+@app.get("/", include_in_schema=False)
+def index():
+    return FileResponse(STATIC_DIR / "index.html")
 
 
 @app.get("/health")
