@@ -86,8 +86,12 @@ def _find_months(q):
     return [month for _, month in sorted(found)]
 
 
-def interpret(question):
-    """Return {"intent": str, "params": dict, "interpreter": "rules"} or raise UnsupportedQuestion."""
+def precheck(question):
+    """Deterministic safety checks shared by the LLM and rule-based paths.
+
+    Raises UnsupportedQuestion for SQL-like input, unsupported topics, or a specific
+    region/product filter. Returns the normalised (lowercase) question otherwise.
+    """
     q = " ".join(question.lower().split())
 
     if SQL_LIKE_RE.search(q):
@@ -103,6 +107,13 @@ def interpret(question):
         if re.search(rf"\b{re.escape(name)}\b", q):
             raise UnsupportedQuestion(
                 f"Filtering by a specific region or product ('{name}') is not supported yet.")
+
+    return q
+
+
+def interpret(question):
+    """Return {"intent": str, "params": dict, "interpreter": "rules"} or raise UnsupportedQuestion."""
+    q = precheck(question)
 
     months = _find_months(q)
 

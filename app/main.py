@@ -9,7 +9,8 @@ from pydantic import BaseModel, Field, field_validator
 
 from app.analytics import AnalyticsError, run_intent
 from app.database import load_csv
-from app.interpreter import SUPPORTED_EXAMPLES, UnsupportedQuestion, interpret
+from app.ai import interpret_with_ai
+from app.interpreter import SUPPORTED_EXAMPLES, UnsupportedQuestion
 
 logger = logging.getLogger("bi-assistant")
 
@@ -58,7 +59,7 @@ def health():
 @app.post("/ask")
 def ask(request: AskRequest):
     try:
-        parsed = interpret(request.question)
+        parsed = interpret_with_ai(request.question)
         result = run_intent(parsed["intent"], parsed["params"])
     except UnsupportedQuestion as exc:
         return error_response(400, "unsupported_question", str(exc),
@@ -70,4 +71,5 @@ def ask(request: AskRequest):
         return error_response(500, "internal_error",
                               "Something went wrong on our side. Please try again.")
 
-    return {"question": request.question, "interpreter": parsed["interpreter"], **result}
+    return {"question": request.question, "interpreter": parsed["interpreter"],
+            "fallback_reason": parsed.get("fallback_reason"), **result}
