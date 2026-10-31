@@ -74,19 +74,51 @@ Questions the assistant deliberately **refuses** (HTTP 400, with example questio
 
 ```mermaid
 flowchart TD
-    UI["Web UI (static/index.html)"] -->|POST /ask| API["FastAPI (app/main.py)"]
-    API --> PRE["Pre-checks: SQL-like input, unsupported topics"]
-    PRE -->|refused| ERR["400 error with example questions"]
-    PRE --> AI["LLM router (Gemini) picks intent and params"]
-    AI --> VAL["Validate against allowlist"]
-    VAL -->|invalid or LLM unavailable| RULES["Rule-based fallback"]
-    VAL -->|valid| SQL["Analytics: parameterized SQL"]
+    subgraph Client["Client"]
+        UI["Web UI<br/>static/index.html"]
+    end
+
+    subgraph Backend["FastAPI backend"]
+        PRE["Pre-checks<br/>SQL-like input, unsupported topics"]
+        AI["LLM router (Gemini)<br/>picks intent and params"]
+        VAL["Validation<br/>allowlist, params, months"]
+        RULES["Rule-based fallback"]
+        SQL["Analytics layer<br/>parameterized SQL"]
+    end
+
+    subgraph Data["Data layer"]
+        CSV[("data/sales.csv")]
+        LOAD["Loader and cleaner"]
+        DB[("SQLite<br/>sales table")]
+        REJ[("rejected_records<br/>table")]
+    end
+
+    ERR["400 error with<br/>example questions"]
+
+    UI -->|"POST /ask"| PRE
+    PRE -->|"refused"| ERR
+    PRE --> AI
+    AI --> VAL
+    VAL -->|"valid"| SQL
+    VAL -->|"invalid or LLM down"| RULES
     RULES --> SQL
-    SQL --> DB[("SQLite")]
-    CSV["data/sales.csv"] --> LOAD["Loader and cleaner (app/database.py)"]
+    SQL --> DB
+    CSV --> LOAD
     LOAD --> DB
-    LOAD -->|bad rows| REJ["rejected_records table"]
-    SQL --> OUT["JSON: answer, supporting data, intent, SQL used"]
+    LOAD -->|"bad rows"| REJ
+    SQL -->|"answer, data, SQL used"| UI
+
+    classDef client fill:#E09F3E,stroke:#335C67,stroke-width:2px,color:#335C67
+    classDef backend fill:#335C67,stroke:#335C67,color:#FFFFFF
+    classDef data fill:#FFFFFF,stroke:#335C67,stroke-width:2px,color:#335C67
+    classDef error fill:#E09F3E,stroke:#335C67,stroke-dasharray:5 3,color:#335C67
+    class UI client
+    class PRE,AI,VAL,RULES,SQL backend
+    class CSV,LOAD,DB,REJ data
+    class ERR error
+    style Client fill:#FDF1DC,stroke:#E09F3E,color:#335C67
+    style Backend fill:#E4EEF0,stroke:#335C67,color:#335C67
+    style Data fill:#F4F4F4,stroke:#335C67,color:#335C67
 ```
 
 The layers are separate on purpose, so each can be tested and replaced independently:
