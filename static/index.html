@@ -6,16 +6,9 @@
 <title>Mini AI BI Assistant</title>
 <style>
   :root {
-    --bg: #f5f6f8; --card: #ffffff; --text: #1d2433; --muted: #667085;
-    --border: #e2e5ea; --accent: #3b5bdb; --accent-soft: #e8edff;
-    --error: #b42318; --error-soft: #fef0ee; --bar: #7c96f5;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #12151c; --card: #1b1f29; --text: #e7e9ee; --muted: #98a2b3;
-      --border: #2c3240; --accent: #8da2ff; --accent-soft: #252c47;
-      --error: #ff8a7a; --error-soft: #3a1f1c; --bar: #5b74e0;
-    }
+    --bg: #335C67; --card: #FFFFFF; --text: #335C67; --muted: #335C67;
+    --border: #335C67; --accent: #E09F3E; --accent-soft: rgba(51,92,103,0.15);
+    --error: #335C67; --error-soft: #E09F3E; --bar: #E09F3E;
   }
   * { box-sizing: border-box; }
   body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -65,7 +58,27 @@
            background: var(--accent-soft); color: var(--accent); font-weight: 600; }
   .loading { color: var(--muted); }
   @media (max-width: 520px) { .bar-row { grid-template-columns: 80px 1fr 90px; } }
-</style>
+/* palette theme */
+  h1 { color: #FFFFFF; }
+  .sub, .loading { color: #FFFFFF; }
+  input[type=text] { background: #FFFFFF; color: #335C67; border: 2px solid #E09F3E; }
+  input[type=text]::placeholder { color: #335C67; opacity: .7; }
+  input[type=text]:focus { outline: 2px solid #FFFFFF; }
+  .ask { border: 2px solid #FFFFFF; color: #335C67; font-weight: 700; }
+  .chip { background: transparent; color: #FFFFFF; border-color: #FFFFFF; }
+  .chip:hover { background: #FFFFFF; color: #335C67; border-color: #FFFFFF; }
+  .card { border: 0; }
+  .error { border: 0; }
+  .badge { background: #335C67; color: #FFFFFF; }
+  /* chart bars */
+  .card:has(> .bars) { background: #335C67; border: 2px solid #FFFFFF; }
+  .card:has(> .bars) h2 { color: #FFFFFF; }
+  .card:has(> .bars) .bar-row span { color: #FFFFFF; }
+  .bar-track { background: rgba(224,159,62,0.25); }
+  .bar-fill { background: #E09F3E; }
+  /* bar outline */
+  .bar-fill { box-shadow: inset 0 0 0 1.5px #335C67; }
+  </style>
 </head>
 <body>
 <main>
